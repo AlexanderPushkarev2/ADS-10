@@ -7,69 +7,61 @@
 
 class Tree {
  private:
-  struct Node {
-    char d;
-    std::vector<Node*> s;
-  };
-  Node* root;
-  std::string p[30] = { "" };
-  void buildTree(Node*, std::vector<char>);
-  void perm(Node*, std::string);
+    struct Node {
+        char value = ' ';
+        bool fool = false;
+        int cnum = 0;
+        std::vector<Node*> leaf;
+    };
+    Node* root;
+    int num = 0;
+
+    void buildTree(Node* root, std::vector<char> inchar) {
+        if (inchar.size() == 0)
+            return;
+        if (!root->fool) {
+            for (auto i = inchar.begin(); i != inchar.end(); i++)
+                if (*i == root->value) {
+                    inchar.erase(i);
+                    break;
+                }
+        }
+        for (size_t i = 0; i < inchar.size(); i++)
+            root->leaf.push_back(new Node());
+        for (size_t i = 0; i < root->leaf.size(); i++)
+            root->leaf[i]->value = inchar[i];
+        for (size_t i = 0; i < root->leaf.size(); i++)
+            buildTree(root->leaf[i], inchar);
+        return;
+    }
+
+    std::vector<std::string> changes;
+    void per(Node* root, std::string ch = "") {
+        if (root->leaf.size() == 0) {
+            ch += root->value;
+            changes.push_back(ch);
+        }
+        if (!root->fool) {
+            ch += root->value;
+            root->cnum += num;
+            num += 1;
+        }
+        for (size_t i = 0; i < root->leaf.size(); i++)
+            per(root->leaf[i], ch);
+    }
 
  public:
-  explicit Tree(std::vector<char> v) {
-    root = new Node;
-    root -> d = 'x';
-    buildTree(root, v);
-    perm(root, "");
-  }
-  std::string gPermut(int i) const {
-    return p[i - 1];
-  }
+    std::string operator[](int i) const {
+        if (i >= changes.size())
+            return "";
+        return changes[i];
+    }
+
+    explicit Tree(std::vector<char> value) {
+        root = new Node();
+        root->fool = true;
+        buildTree(root, value);
+        per(root);
+    }
 };
-
-void Tree::buildTree(Node* root, std::vector<char> link) {
-  if (!link.size()) {
-    return;
-  }
-  if (root->d != 'x') {
-    for (std::vector<char>::iterator t = link.begin(); t != link.end(); ++t) {
-      if (*t == root->d) {
-        link.erase(t);
-        break;
-      }
-    }
-  }
-  for (int temp = 0; temp < link.size(); ++temp) {
-    root->s.push_back(new Node);
-  }
-  for (int temp = 0; temp < root->s.size(); ++temp) {
-    root->s[temp]->d = link[temp];
-  }
-  for (int temp = 0; temp < root->s.size(); ++temp) {
-    buildTree(root->s[temp], link);
-  }
-}
-
-void Tree::perm(Node* root, std::string s) {
-  if (!root->s.size()) {
-    s += root->d;
-    int z = 0;
-    while (true) {
-      if (p[z] == "") {
-        p[z] = s;
-        break;
-      } else {
-        ++z;
-      }
-    }
-    return;
-  }
-  if (root->d != 'x') {
-    s += root->d;
-  }
-  for (int i = 0; i < root->s.size(); ++i) {
-    perm(root->s[i], s);
-  }
-}
 #endif  // INCLUDE_TREE_H_
